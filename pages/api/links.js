@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { original_url, slug, expires_at } = req.body
+    const { original_url, slug, expires_at, name } = req.body
 
     if (!original_url) return res.status(400).json({ error: 'URL이 필요합니다' })
 
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
     const { data, error } = await supabase
       .from('links')
-      .insert({ original_url, slug: finalSlug, expires_at: expires_at || null })
+      .insert({ original_url, slug: finalSlug, expires_at: expires_at || null, name: name || null })
       .select()
       .single()
 

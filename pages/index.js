@@ -14,7 +14,7 @@ export async function getServerSideProps({ req }) {
 export default function Home() {
   const [links, setLinks] = useState([])
   const [loading, setLoading] = useState(true)
-  const [form, setForm] = useState({ original_url: '', slug: '', expires_at: '' })
+  const [form, setForm] = useState({ original_url: '', slug: '', expires_at: '', name: '' })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [statsModal, setStatsModal] = useState(null)
@@ -42,13 +42,14 @@ export default function Home() {
         original_url: form.original_url,
         slug: form.slug || undefined,
         expires_at: form.expires_at || undefined,
+        name: form.name || undefined,
       }),
     })
     const data = await res.json()
     if (!res.ok) {
       setError(data.error)
     } else {
-      setForm({ original_url: '', slug: '', expires_at: '' })
+      setForm({ original_url: '', slug: '', expires_at: '', name: '' })
       fetchLinks()
     }
     setSubmitting(false)
@@ -119,7 +120,7 @@ export default function Home() {
         <div style={{ background: '#fff', borderRadius: '12px', padding: '28px', marginBottom: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <h2 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '20px', color: '#111' }}>새 링크 만들기</h2>
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '10px', alignItems: 'end' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
               <div>
                 <label style={labelStyle}>원본 URL *</label>
                 <input
@@ -132,9 +133,21 @@ export default function Home() {
                 />
               </div>
               <div>
+                <label style={labelStyle}>이름 (선택)</label>
+                <input
+                  style={inputStyle}
+                  type="text"
+                  placeholder="교보문고 신간, 이벤트 페이지..."
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto auto', gap: '10px', alignItems: 'end' }}>
+              <div>
                 <label style={labelStyle}>슬러그 (선택)</label>
                 <input
-                  style={{ ...inputStyle, width: '120px' }}
+                  style={{ ...inputStyle, width: '160px' }}
                   type="text"
                   placeholder="my-link"
                   value={form.slug}
@@ -144,7 +157,7 @@ export default function Home() {
               <div>
                 <label style={labelStyle}>만료일 (선택)</label>
                 <input
-                  style={{ ...inputStyle, width: '140px' }}
+                  style={{ ...inputStyle, width: '160px' }}
                   type="date"
                   value={form.expires_at}
                   onChange={e => setForm({ ...form, expires_at: e.target.value })}
@@ -173,7 +186,7 @@ export default function Home() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: '#fafafa' }}>
-                  {['단축 URL', '원본 URL', '클릭', '만료일', '상태', ''].map(h => (
+                  {['이름', '단축 URL', '원본 URL', '클릭', '만료일', '상태', ''].map(h => (
                     <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '12px', color: '#999', fontWeight: '600', borderBottom: '1px solid #f0f0f0' }}>{h}</th>
                   ))}
                 </tr>
@@ -185,6 +198,11 @@ export default function Home() {
                   const shortUrl = `${BASE_URL}/${link.slug}`
                   return (
                     <tr key={link.id} style={{ borderBottom: '1px solid #f7f7f7' }}>
+                      <td style={{ padding: '12px 16px', maxWidth: '140px' }}>
+                        <span style={{ fontSize: '13px', color: '#333', fontWeight: link.name ? '600' : '400' }}>
+                          {link.name || <span style={{ color: '#ccc' }}>-</span>}
+                        </span>
+                      </td>
                       <td style={{ padding: '12px 16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <span style={{ fontSize: '13px', fontWeight: '600', color: '#111', fontFamily: 'monospace' }}>/{link.slug}</span>
