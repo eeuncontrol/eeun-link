@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
+import { parse } from 'cookie'
 
 const BASE_URL = typeof window !== 'undefined' ? window.location.origin : ''
+
+export async function getServerSideProps({ req }) {
+  const cookies = parse(req.headers.cookie || '')
+  if (cookies.auth !== 'ok') {
+    return { redirect: { destination: '/login', permanent: false } }
+  }
+  return { props: {} }
+}
 
 export default function Home() {
   const [links, setLinks] = useState([])
@@ -99,6 +108,10 @@ export default function Home() {
         <span style={{ fontSize: '20px' }}>🔗</span>
         <span style={{ fontWeight: '700', fontSize: '18px', letterSpacing: '-0.5px' }}>eeun-link</span>
         <span style={{ color: '#666', fontSize: '13px', marginLeft: '4px' }}>URL 단축 관리</span>
+        <button onClick={async () => { await fetch('/api/auth/logout'); window.location.href = '/login' }}
+          style={{ marginLeft: 'auto', background: 'none', border: '1px solid #444', color: '#aaa', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
+          로그아웃
+        </button>
       </header>
 
       <main style={{ maxWidth: '900px', margin: '0 auto', padding: '32px 16px' }}>
