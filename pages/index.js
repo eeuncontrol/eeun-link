@@ -20,6 +20,7 @@ export default function Home() {
   const [statsModal, setStatsModal] = useState(null)
   const [statsData, setStatsData] = useState([])
   const [copied, setCopied] = useState('')
+  const [qrModal, setQrModal] = useState(null)
 
   useEffect(() => { fetchLinks() }, [])
 
@@ -236,7 +237,10 @@ export default function Home() {
                         </button>
                       </td>
                       <td style={{ padding: '12px 16px' }}>
-                        <button onClick={() => handleDelete(link.id)} style={{ ...btnIcon, color: '#e53e3e' }} title="삭제">✕</button>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button onClick={() => setQrModal(link)} style={{ ...btnIcon, fontSize: '15px' }} title="QR 코드">⊞</button>
+                          <button onClick={() => handleDelete(link.id)} style={{ ...btnIcon, color: '#e53e3e' }} title="삭제">✕</button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -246,6 +250,47 @@ export default function Home() {
           )}
         </div>
       </main>
+
+      {/* QR Modal */}
+      {qrModal && (
+        <div onClick={() => setQrModal(null)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '16px'
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#fff', borderRadius: '16px', padding: '32px', textAlign: 'center', maxWidth: '320px', width: '100%'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ textAlign: 'left' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#111' }}>QR 코드</h3>
+                <p style={{ fontSize: '12px', color: '#999', marginTop: '2px' }}>{qrModal.name || `/${qrModal.slug}`}</p>
+              </div>
+              <button onClick={() => setQrModal(null)} style={{ ...btnIcon, fontSize: '18px', color: '#999' }}>✕</button>
+            </div>
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`${window.location.origin}/${qrModal.slug}`)}`}
+              alt="QR Code"
+              style={{ width: '200px', height: '200px', borderRadius: '8px' }}
+            />
+            <p style={{ fontSize: '12px', color: '#999', marginTop: '12px', wordBreak: 'break-all' }}>
+              {window.location.origin}/{qrModal.slug}
+            </p>
+            <a
+              href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(`${window.location.origin}/${qrModal.slug}`)}`}
+              download={`qr-${qrModal.slug}.png`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-block', marginTop: '16px', padding: '10px 24px',
+                background: '#111', color: '#fff', borderRadius: '8px',
+                textDecoration: 'none', fontSize: '13px', fontWeight: '600'
+              }}
+            >
+              이미지 다운로드
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Stats Modal */}
       {statsModal && (
