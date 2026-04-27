@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 
 export default function Login() {
   const [password, setPassword] = useState('')
+  const [remember, setRemember] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -14,7 +15,7 @@ export default function Login() {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ password, remember }),
     })
     if (res.ok) {
       router.push('/')
@@ -47,6 +48,15 @@ export default function Login() {
             }}
             required
           />
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={e => setRemember(e.target.checked)}
+              style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#111' }}
+            />
+            <span style={{ fontSize: '13px', color: '#555' }}>이 기기에 비밀번호 저장하기</span>
+          </label>
           {error && <p style={{ color: '#e53e3e', fontSize: '13px', marginBottom: '12px' }}>{error}</p>}
           <button type="submit" disabled={loading} style={{
             width: '100%', padding: '12px', background: '#111', color: '#fff',
