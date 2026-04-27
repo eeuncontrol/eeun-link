@@ -21,6 +21,9 @@ export default function Home() {
   const [statsData, setStatsData] = useState([])
   const [copied, setCopied] = useState('')
   const [qrModal, setQrModal] = useState(null)
+  const [editModal, setEditModal] = useState(null)
+  const [editForm, setEditForm] = useState({ name: '', original_url: '', expires_at: '' })
+  const [editSubmitting, setEditSubmitting] = useState(false)
 
   useEffect(() => { fetchLinks() }, [])
 
@@ -54,6 +57,32 @@ export default function Home() {
       fetchLinks()
     }
     setSubmitting(false)
+  }
+
+  function openEdit(link) {
+    setEditModal(link)
+    setEditForm({
+      name: link.name || '',
+      original_url: link.original_url || '',
+      expires_at: link.expires_at ? link.expires_at.split('T')[0] : '',
+    })
+  }
+
+  async function handleEdit(e) {
+    e.preventDefault()
+    setEditSubmitting(true)
+    await fetch(`/api/links/${editModal.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: editForm.name,
+        original_url: editForm.original_url,
+        expires_at: editForm.expires_at,
+      }),
+    })
+    setEditModal(null)
+    fetchLinks()
+    setEditSubmitting(false)
   }
 
   async function handleDelete(id) {
@@ -239,6 +268,7 @@ export default function Home() {
                       <td style={{ padding: '12px 16px' }}>
                         <div style={{ display: 'flex', gap: '4px' }}>
                           <button onClick={() => setQrModal(link)} style={{ ...btnIcon, fontSize: '15px' }} title="QR 코드">⊞</button>
+                          <button onClick={() => openEdit(link)} style={{ ...btnIcon, fontSize: '13px', color: '#666' }} title="수정">✎</button>
                           <button onClick={() => handleDelete(link.id)} style={{ ...btnIcon, color: '#e53e3e' }} title="삭제">✕</button>
                         </div>
                       </td>
@@ -250,6 +280,52 @@ export default function Home() {
           )}
         </div>
       </main>
+
+      {/* Edit Modal */}
+      {editModal && (
+        <div onClick={() => setEditModal(null)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '16px'
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#fff', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '480px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#111' }}>링크 수정</h3>
+                <p style={{ fontSize: '12px', color: '#999', marginTop: '2px', fontFamily: 'monospace' }}>/{editModal.slug}</p>
+              </div>
+              <button onClick={() => setEditModal(null)} style={{ ...btnIcon, fontSize: '18px', color: '#999' }}>✕</button>
+            </div>
+            <form onSubmit={handleEdit}>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={labelStyle}>이름</label>
+                <input style={inputStyle} type="text" placeholder="링크 이름" value={editForm.name}
+                  onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
+              </div>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={labelStyle}>원본 URL *</label>
+                <input style={inputStyle} type="url" placeholder="https://example.com" value={editForm.original_url}
+                  onChange={e => setEditForm({ ...editForm, original_url: e.target.value })} required />
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={labelStyle}>만료일</label>
+                <input style={inputStyle} type="date" value={editForm.expires_at}
+                  onChange={e => setEditForm({ ...editForm, expires_at: e.target.value })} />
+              </div>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setEditModal(null)} style={{
+                  padding: '10px 20px', background: '#f5f5f5', border: 'none', borderRadius: '8px',
+                  fontSize: '14px', cursor: 'pointer', color: '#555'
+                }}>취소</button>
+                <button type="submit" disabled={editSubmitting} style={btnPrimary}>
+                  {editSubmitting ? '저장 중...' : '저장'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* QR Modal */}
       {qrModal && (

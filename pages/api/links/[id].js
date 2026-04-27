@@ -10,10 +10,16 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'PATCH') {
-    const { is_active } = req.body
+    const { is_active, original_url, name, expires_at } = req.body
+    const updateData = {}
+    if (is_active !== undefined) updateData.is_active = is_active
+    if (original_url !== undefined) updateData.original_url = original_url
+    if (name !== undefined) updateData.name = name
+    if (expires_at !== undefined) updateData.expires_at = expires_at || null
+
     const { data, error } = await supabase
       .from('links')
-      .update({ is_active })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()
