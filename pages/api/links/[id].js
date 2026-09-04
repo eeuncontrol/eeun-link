@@ -1,6 +1,9 @@
 import { supabase } from '../../../lib/supabase'
+import { isAuthenticated } from '../../../lib/auth'
 
 export default async function handler(req, res) {
+  if (!isAuthenticated(req)) return res.status(401).json({ error: '인증이 필요합니다' })
+
   const { id } = req.query
 
   if (req.method === 'DELETE') {
